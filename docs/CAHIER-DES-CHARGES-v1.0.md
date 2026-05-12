@@ -2,7 +2,7 @@
 
 > **Version** : 1.1 (figée)
 > **Date** : 12 mai 2026
-> **Auteur** : Thibault (étudiant, candidat au défi data.gouv.fr)
+> **Auteur** : Thibault (étudiant, candidat au défi data.gouv.fr) Alban, (étudiant, candidat au défi data.gouv.fr)
 > **Défi** : « L'impact environnemental de l'IA générative » — defis.data.gouv.fr
 > **Statut** : Référence projet. Toute modification = bump version + ADR associé.
 > **Changelog v1.1** : ajout de l'architecture médaillon (ADR-0009) — pipeline Copper/Silver/Gold automatique pour toutes les sources.
