@@ -214,9 +214,16 @@ cargo clippy -- -D warnings
 cargo fmt --check
 cd web && npm run lint && npm run check
 
-# Référentiel
-cargo run -p sobria-ingest -- update-all      # met à jour toutes les sources
-dvc push                                       # publie nouveau référentiel
+# Pipeline médaillon (ADR-0009)
+cargo run -p sobria-ingest -- pipeline run                 # tout le pipeline Copper→Silver→Gold
+cargo run -p sobria-ingest -- pipeline run --incremental   # ne ré-ingère que ce qui a changé
+cargo run -p sobria-ingest -- pipeline run --source rte-eco2mix  # source unique
+cargo run -p sobria-ingest -- copper --all                 # juste la couche brute
+cargo run -p sobria-ingest -- silver --all                 # promotion Copper→Silver
+cargo run -p sobria-ingest -- gold                         # construction du Gold final
+cargo run -p sobria-ingest -- validate                     # vérifie l'intégrité + lineage
+dvc repro                                                  # rejoue les stages modifiés
+dvc push                                                   # publie le nouveau référentiel sur le remote
 
 # Build production
 ./scripts/build-all.sh              # produit tous les binaires + web + ext

@@ -1,10 +1,11 @@
 # Cahier des charges — Sobr.ia
 
-> **Version** : 1.0 (figée)
+> **Version** : 1.1 (figée)
 > **Date** : 12 mai 2026
 > **Auteur** : Thibault (étudiant, candidat au défi data.gouv.fr)
 > **Défi** : « L'impact environnemental de l'IA générative » — defis.data.gouv.fr
 > **Statut** : Référence projet. Toute modification = bump version + ADR associé.
+> **Changelog v1.1** : ajout de l'architecture médaillon (ADR-0009) — pipeline Copper/Silver/Gold automatique pour toutes les sources.
 
 ---
 
@@ -303,13 +304,29 @@ Pour chaque estimation, l'outil produit (avec intervalles d'incertitude propagé
 │  └────────────────────────────────────────────────────┘    │
 └────────────────────────────────────────────────────────────┘
                           │
-                          ▼ (CI nocturne)
+                          ▼ (alimentés par le pipeline médaillon — ADR-0009)
 ┌────────────────────────────────────────────────────────────┐
-│ Pipeline GitHub Actions                                     │
-│ • ingestion sources externes (ADEME, RTE, HF, papers)      │
-│ • validation, dédup, normalisation                         │
-│ • génération SQLite + Parquet versionnés (DVC)             │
-│ • publication release GitHub + dataset data.gouv.fr        │
+│ Pipeline médaillon (CI nocturne via GitHub Actions + DVC)  │
+│                                                             │
+│   Sources externes (ADEME, RTE, HF, EcoLogits, papers…)    │
+│                       │                                     │
+│           ingest_copper()                                   │
+│                       ▼                                     │
+│   🟫 Copper  data/copper/<source>/<YYYY-MM-DD>/...         │
+│   (raw, immutable, hashé, daté, manifest.json)             │
+│                       │                                     │
+│           promote_silver()                                  │
+│                       ▼                                     │
+│   🥈 Silver  data/silver/<source>/*.parquet                │
+│   (typé, validé, normalisé SI, lineage vers Copper)        │
+│                       │                                     │
+│           contribute_gold()                                 │
+│                       ▼                                     │
+│   🥇 Gold    referentiel.sqlite  +  analytics.parquet      │
+│              datasheet.jsonld    +  MANIFEST.sha256 (GPG)  │
+│                                                             │
+│ Orchestration : dvc.yaml — `dvc repro` reproduit à l'iden- │
+│ tique. Publication release GitHub + dataset data.gouv.fr.  │
 └────────────────────────────────────────────────────────────┘
 ```
 
